@@ -1,0 +1,381 @@
+@name AScC_Advanced_Subway_car_Control
+@inputs On MU_Master Pod:entity Trucks:array MU_In_Front:array MU_In_Rear:array
+@outputs MPH Throttle Accelerate OperatorKey OperatorKeyRemoved Brake BrakePressure MU_Out_Rear:array MU_Out_Front:array
+
+@outputs Angle2 Angle Total FlangeSound
+
+@persist MaxSpeed MaxSpd Mul Throttle BrakePressure OperatorKey BrakeMul Brake_Release:string MU_Out_Rear:array MU_Out_Front:array 
+@persist Brake OperatorKeyRemoved BrakeSpd ACC Accelerate Shift:string [Controls Routing]:table [E O Body Driver]:entity FlangeSound
+@persist [TractionMotorSound Wheel_Sound Brake_Sound Flange_Sound]:string EngineMin EngineMax Braking Spd Angle Angle2 Total Speed
+
+@trigger
+@model models/jaanus/wiretool/wiretool_speed.mdl
+#Advanced Subway car Control
+#based on OLC but heavily modified
+#MU doesnt work yet
+
+if(first()|duped()){
+Controls = table()
+#include "advanced_subway_car_control/version/version.txt"
+
+    #Config
+
+
+#Controls, they work pretty similar PT2
+
+Shift = "lshift"                #shift key, works the same as in PT2, put " +Shift" behind key names to use shift
+
+Controls["NotchUp",string]      = "D"
+Controls["NotchDown",string]    = "A"
+Controls["Accelerate",string]   = "F"       #Shift isn't Recommended because you need to be holding this to accelerate
+
+Controls["ReverserF",string]    = "W"
+Controls["ReverserB",string]    = "S"
+
+Controls["BrakeUp",string]      = "W +Shift"
+Controls["BrakeDown",string]    = "S +Shift"
+
+Controls["EmBrake",string]      = "rshift"
+
+#other stuff
+
+    BrakeSpd = 2.5  #Brake Lever Steps (Max is 10)
+
+    MaxSpeed = 45   #Top Speed in MPH
+    
+    Mul = 120         #Force multiplier, debug
+    BrakeMul = 250    #Brake force multiplier
+    
+#Sounds
+
+    TractionMotorSound = "nycta/r1-r9/motor1.wav"   
+    Wheel_Sound = "priority's sounds/cta/cta_l_wheelsounds_loop.wav"
+    Brake_Sound = "nycta/r21-22/flange0.wav"
+    Brake_Release = "gsgtrainsounds/misc/airbrakes/air_ind_release2.wav"
+    Flange_Sound = "nycta/r21-22/flange3.wav"
+    
+    #End of Config
+
+
+
+
+
+    EngineMin = 70 #Minimum TM pitch
+    EngineMax = 130 #Maximum TM pitch
+
+    
+    MaxSpd = MaxSpeed*23.466
+
+    Throttle = 0
+    AccelTo = 0
+    Brake = 10
+    E = entity()
+    O = owner()
+    #runOnChat(1)
+
+    #Controls Init
+    foreach(K,V:string = Controls){
+        if(V:find(" +Shift")){
+            Routing[K,number] = 1
+            local EXP = V:explode(" ")
+            Controls[K,string] = EXP[1,string]
+        }else{
+            Routing[K,number] = 0
+        }
+    }
+
+#MU assignment
+
+#[MU_Out_Front = array(
+
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            
+            )
+
+MU_Out_Rear = MU_Out_Front:clone()]#
+
+setname("Advanced Subway car Controller\n"+Main_Version)
+
+}
+
+runOnTick(1)
+if(On){
+    
+    #sound init
+    if(~On){
+        Body = E:isWeldedTo()
+        Body:soundPlay(0,0,TractionMotorSound)
+        soundVolume(0,0)
+        Body:soundPlay(1,0,Wheel_Sound)
+        soundVolume(1,1)
+        Body:soundPlay(2,0,Brake_Sound)
+        soundVolume(2,0)
+        Body:soundPlay(4,0,Flange_Sound)
+        soundVolume(4,0)
+    }
+
+#--OUT--------MUInfo table (doors):
+
+#MU Master
+#OpenRight
+#OpenLeft
+
+#--IN---------DoorInfo table:
+
+#OpenRight
+#OpenLeft
+
+#--IN-&-OUT---MU table:
+
+#MU Connected
+#Reverser
+#Throttle
+#Deadman ( Accelerate )
+#Brake
+#BrakePressure
+#Doors Right
+#Doors Left
+#MU_Master
+
+
+#[MU_Front = (MU_In_Front[1,number])
+MU_Rear = (MU_In_Rear[1,number])
+MU_Connected = MU_Front | MU_Rear]#
+
+
+if(MU_Master){
+    OperatorKeyRemoved = 0
+    Driver = Pod:driver()
+    runOnKeys(Driver,1)
+
+    if(keyClk(Driver)){
+    
+    local Shifting = Driver:keyPressed(Shift)
+    
+    local ReverserF = Driver:keyPressed(Controls["ReverserF",string]) & (Routing["ReverserF",number] ? Shifting : !Shifting)
+    local ReverserB = Driver:keyPressed(Controls["ReverserB",string]) & (Routing["ReverserB",number] ? Shifting : !Shifting)
+    local NotchUp   = Driver:keyPressed(Controls["NotchUp",string]) & (Routing["NotchUp",number] ? Shifting : !Shifting)
+    local NotchDown = Driver:keyPressed(Controls["NotchDown",string]) & (Routing["NotchDown",number] ? Shifting : !Shifting)
+    
+    Accelerate = Driver:keyPressed(Controls["Accelerate",string]) & (Routing["Accelerate",number] ? Shifting : !Shifting)
+    #[if(ACC & changed(ACC)){
+        Accelerate=1
+    }else{
+        Accelerate=0
+    }]#
+    
+    local BrakeUp = Driver:keyPressed(Controls["BrakeUp",string]) & (Routing["BrakeUp",number] ? Shifting : !Shifting)
+    local BrakeDown = Driver:keyPressed(Controls["BrakeDown",string]) & (Routing["BrakeDown",number] ? Shifting : !Shifting)
+    
+    #Throttle Controlling
+
+    if(NotchUp|NotchDown){
+        Throttle += (NotchUp - NotchDown)
+        Throttle = clamp(Throttle,0,3)  
+    }
+    
+    #Brake Lever Controlling
+       
+    if(BrakeUp|BrakeDown){
+        Brake += (BrakeUp-BrakeDown)*(1*BrakeSpd)
+        Brake = clamp(Brake,0,10)
+    }
+    
+    #Operator Key Controlling
+    
+    if((ReverserF|ReverserB)&Throttle==0){
+        OperatorKey += (ReverserF - ReverserB)
+        OperatorKey = clamp(OperatorKey,-1,1)
+    }  
+}
+
+
+    
+    
+    
+#--IN-&-OUT---MU table:
+
+#MU Connected
+#Reverser
+#Throttle
+#Deadman ( Accelerate )
+#Brake
+#BrakePressure
+#Doors Right
+#Doors Left
+#MU_Master
+    
+#[    if(MU_Connected){
+    
+    MU_Out_Rear[2,number] = OperatorKey
+    MU_Out_Rear[3,number] = Throttle
+    MU_Out_Rear[4,number] = Accelerate
+    MU_Out_Rear[5,number] = Brake
+    #MU_Out_Rear[6,number] = BrakePressure
+    #MU_Out_Rear[7,number] = #Doors Right
+    #MU_Out_Rear[8,number] = #Doors Left
+    MU_Out_Rear[9,number] = 1
+    
+    MU_Out_Front = MU_Out_Rear:clone()
+    }]#
+    
+    
+}else{
+OperatorKeyRemoved = 1
+
+#[    if(MU_Connected & MU_In_Front[9,number]){
+    
+
+    MU_Out_Rear[2,number] = OperatorKey     = MU_In_Front[2,number]
+    MU_Out_Rear[3,number] = Throttle        = MU_In_Front[3,number]
+    MU_Out_Rear[4,number] = Accelerate      = MU_In_Front[4,number]
+    MU_Out_Rear[5,number] = Brake           = MU_In_Front[5,number]
+    #MU_Out_Rear[6,number] = BrakePressure   = MU_In_Front[6,number]
+    #MU_Out_Rear[7,number] = #Doors Right   = MU_In_Front[7,number]
+    #MU_Out_Rear[8,number] = #Doors Left    = MU_In_Front[8,number]
+    
+    MU_Out_Rear[9,number] = 1
+    
+    
+    
+    MU_Out_Front[2,number] = 0
+    MU_Out_Front[3,number] = 0
+    MU_Out_Front[4,number] = 0
+    MU_Out_Front[5,number] = 0
+    #MU_Out_Front[6,number] = 0
+    #MU_Out_Front[7,number] = #Doors Right   = MU_In_Front[7,number]
+    #MU_Out_Front[8,number] = #Doors Left    = MU_In_Front[8,number]
+    
+    MU_Out_Front[9,number] = 0
+    
+    }elseif(MU_Connected & MU_In_Rear[9,number]){
+    
+
+    MU_Out_Front[2,number] = OperatorKey     = -MU_In_Rear[2,number]
+    MU_Out_Front[3,number] = Throttle        = MU_In_Rear[3,number]
+    MU_Out_Front[4,number] = Accelerate      = MU_In_Rear[4,number]
+    MU_Out_Front[5,number] = Brake           = MU_In_Rear[5,number]
+    #MU_Out_Front[6,number] = BrakePressure   = MU_In_Rear[6,number]
+    #MU_Out_Front[7,number] = #Doors Right   = MU_In_Front[7,number]
+    #MU_Out_Front[8,number] = #Doors Left    = MU_In_Front[8,number]
+    
+    MU_Out_Front[9,number] = 1
+    
+    
+    
+    MU_Out_Rear[2,number] = 0
+    MU_Out_Rear[3,number] = 0
+    MU_Out_Rear[4,number] = 0
+    MU_Out_Rear[5,number] = 0
+    #MU_Out_Rear[6,number] = 0
+    #MU_Out_Rear[7,number] = #Doors Right   = MU_In_Front[7,number]
+    #MU_Out_Rear[8,number] = #Doors Left    = MU_In_Front[8,number]
+    
+    MU_Out_Rear[9,number] = 0
+    
+}]#
+
+}
+
+    #brake pressure
+
+    if(BrakePressure < Brake*10){
+        BrakePressure+= 1
+    }elseif(BrakePressure > Brake*10){
+        BrakePressure+= -1
+    }
+    clamp(BrakePressure,0,100)
+    
+    Braking = BrakePressure>0 ? 1 : 0
+    
+    #Velocity Info Gathering
+    Vel = -E:velL():z()
+    Spd = abs(Vel)
+    MPH = toUnit("mph",Spd)
+    
+    #Sound Pitch & Volume Adjustment
+    
+    soundPitch(0,EngineMin + (EngineMax - EngineMin)*abs(MPH)/MaxSpeed)
+    soundVolume(0,MPH>0.5? Throttle/3+0.3 : 0)
+    
+    soundPitch(1,Spd > 15 ? Spd/10 : 0)
+    
+    soundPitch(2,clamp(Spd/(MaxSpd/100),75,100))
+    soundVolume(2,Spd > 15 & Braking == 1 ? BrakePressure/50*0.25 + Spd/(MaxSpd*2) : 0)
+    
+    
+    #flange sound calculation
+
+    Angle = Body:angles():yaw()
+    Angle2 = Trucks[1,entity]:angles():yaw()   
+    Total = round(Angle - Angle2)
+    Speed = Body:vel():length()   
+    if((Total < 0 & Total > -357) | Total > 3)
+    {
+    FlangeSound = 1
+    }
+    elseif(Total == 0 | Total < 3 | Total > -3 | Total < -357)
+    {
+    FlangeSound = 0
+    }
+
+    soundVolume(4,FlangeSound*((abs(MPH)/MaxSpeed)*0.25))
+    
+    #Force Application
+    Dir = -E:up()
+    TargetSpeed = (MaxSpd)*(Throttle/3)*OperatorKey
+    
+    if(Accelerate){
+    Body:applyForce(Dir*(TargetSpeed - Vel)*Mul*2)
+    }
+    
+    if(BrakePressure>0 & Spd>15){
+    Body:applyForce((E:up()*(BrakePressure*(Vel/50))*BrakeMul*2))
+    }elseif(BrakePressure>0 & Spd<15){
+    Trucks[1,entity]:propPhysicalMaterial("metal")
+    Trucks[2,entity]:propPhysicalMaterial("metal")
+    }elseif(BrakePressure==0){
+    Trucks[1,entity]:propPhysicalMaterial("gmod_ice")
+    Trucks[2,entity]:propPhysicalMaterial("gmod_ice")
+    }
+    
+    if(changed(Brake)&!Brake){
+        soundPlay(3,0,Brake_Release)
+    }
+    #Chat Control
+    
+#[    if(chatClk(O)){
+        Sentence = O:lastSaid():explode(" ")
+        CMD = Sentence[1,string]
+        if(CMD == ".throttle"){
+            
+            Throttle = clamp(Sentence[2,string]:toNumber(),-3,3)
+            hideChat(1)
+            print("Notch set to " + Throttle:toString())
+        }elseif(CMD == ".brake"){
+            
+            AccelTo = clamp(Sentence[2,string]:toNumber(),-3,3)
+            hideChat(1)
+            print("Brake set to " + AccelTo:toString() + "%")
+        }
+}]#
+    
+}else{
+    if(~On){
+        Throttle = Vel = Spd = MPH = OperatorKey = Brake = 0
+        OperatorKeyRemoved = 1
+        soundStop(0)
+        soundStop(1)
+        soundStop(2)
+        soundStop(3)
+    }
+}
+

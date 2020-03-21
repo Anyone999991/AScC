@@ -1,0 +1,242 @@
+@name AScC Door System R33
+@inputs Body:entity MU_Master ToggleRightDoors ToggleLeftDoors MUInfo:array #DoorMU_In_Front:array DoorMU_In_Rear:array
+@outputs RightOpen LeftOpen DoorInfo:array #DoorMU_Out_Front:array DoorMU_Out_Rear:array
+@persist E:entity DoorSpeed DoorColor:vector RightOpen LeftOpen DoorMU_Out_Front:array DoorMU_Out_Rear:array [DoorMaterial DoorOpenSound DoorOpenAnnouncement DoorCloseSound DoorCloseAnnouncement]:string RightToggled DoorPosR MaxDoorPos LeftToggled DoorPosL
+@trigger 
+if(first()|dupefinished()){
+E = Body
+A = 1
+#include "advanced_subway_car_control/version/version.txt"
+
+#Config
+
+DoorSpeed = 1.5  #door speed
+
+DoorMaterial = "models/proppertextures/aluminum"
+DoorWindowLining = "sprops/textures/sprops_chrome2"
+DoorColor = vec(255)
+
+#Sounds, these have to be on the server in order to work properly
+
+DoorOpenSound = "nycta/r32/dooropn.wav"
+DoorOpenAnnouncement = ""
+DoorCloseSound = "nycta/r32/doorcls.wav"
+DoorCloseAnnouncement = ""
+
+#end of config
+
+
+MaxDoorPos = 23
+
+setName("AScC Door System\nR33\nVersion: "+Door_Version)
+#Right Doors
+
+#F Parent
+A=1
+holoCreate(A,E:toWorld(vec(0,0,0)),vec(0),E:toWorld(ang(0,0,0)))
+holoParent(A,E)
+#R Parent
+A=2
+holoCreate(A,E:toWorld(vec(0,0,0)),vec(0),E:toWorld(ang(0,0,0)))
+holoParent(A,E)
+
+#Front Doors
+A=3
+holoCreate(A,E:toWorld(vec(201.43,-51.75,86.785)),vec(1.01,0.5,1.01),E:toWorld(ang(0,0,0)),DoorColor,"models/botzmpak/parts/a_smee_door.mdl")
+holoParent(A,1)
+holoEntity(A):setSubMaterial(2,DoorMaterial)
+holoEntity(A):setSubMaterial(3,DoorWindowLining)
+
+A=4
+holoCreate(A,E:toWorld(vec(177.7,-51.75,86.785)),vec(1.01,0.5,1.01),E:toWorld(ang(0,180,0)),DoorColor,"models/botzmpak/parts/a_smee_door.mdl")
+holoParent(A,2)
+holoEntity(A):setSubMaterial(2,DoorMaterial)
+holoEntity(A):setSubMaterial(3,DoorWindowLining)
+
+#Middle Doors
+A=5
+holoCreate(A,E:toWorld(vec(-6,-51.75,86.785)),vec(1.01,0.5,1.01),E:toWorld(ang(0,0,0)),DoorColor,"models/botzmpak/parts/a_smee_door.mdl")
+holoParent(A,1)
+holoEntity(A):setSubMaterial(2,DoorMaterial)
+holoEntity(A):setSubMaterial(3,DoorWindowLining)
+
+A=6
+holoCreate(A,E:toWorld(vec(-29.73,-51.75,86.785)),vec(1.01,0.5,1.01),E:toWorld(ang(0,180,0)),DoorColor,"models/botzmpak/parts/a_smee_door.mdl")
+holoParent(A,2)
+holoEntity(A):setSubMaterial(2,DoorMaterial)
+holoEntity(A):setSubMaterial(3,DoorWindowLining)
+
+#Rear Doors
+A=7
+holoCreate(A,E:toWorld(vec(-213.4,-51.75,86.785)),vec(1.01,0.5,1.01),E:toWorld(ang(0,0,0)),DoorColor,"models/botzmpak/parts/a_smee_door.mdl")
+holoParent(A,1)
+holoEntity(A):setSubMaterial(2,DoorMaterial)
+holoEntity(A):setSubMaterial(3,DoorWindowLining)
+
+A=8
+holoCreate(A,E:toWorld(vec(-237.13,-51.75,86.785)),vec(1.01,0.5,1.01),E:toWorld(ang(0,180,0)),DoorColor,"models/botzmpak/parts/a_smee_door.mdl")
+holoParent(A,2)
+holoEntity(A):setSubMaterial(2,DoorMaterial)
+holoEntity(A):setSubMaterial(3,DoorWindowLining)
+
+
+#Left Doors
+
+#F Parent
+A=9
+holoCreate(A,E:toWorld(vec(0,0,0)),vec(0),E:toWorld(ang(0,0,0)))
+holoParent(A,E)
+#R Parent
+A=10
+holoCreate(A,E:toWorld(vec(0,0,0)),vec(0),E:toWorld(ang(0,0,0)))
+holoParent(A,E)
+
+#Front Doors
+A=11
+holoCreate(A,E:toWorld(vec(-201.43,51.75,86.785)),vec(1.01,0.5,1.01),E:toWorld(ang(0,180,0)),DoorColor,"models/botzmpak/parts/a_smee_door.mdl")
+holoParent(A,9)
+holoEntity(A):setSubMaterial(2,DoorMaterial)
+holoEntity(A):setSubMaterial(3,DoorWindowLining)
+
+A=12
+holoCreate(A,E:toWorld(vec(-177.7,51.75,86.785)),vec(1.01,0.5,1.01),E:toWorld(ang(0,0,0)),DoorColor,"models/botzmpak/parts/a_smee_door.mdl")
+holoParent(A,10)
+holoEntity(A):setSubMaterial(2,DoorMaterial)
+holoEntity(A):setSubMaterial(3,DoorWindowLining)
+
+#Middle Doors
+A=13
+holoCreate(A,E:toWorld(vec(6,51.75,86.785)),vec(1.01,0.5,1.01),E:toWorld(ang(0,180,0)),DoorColor,"models/botzmpak/parts/a_smee_door.mdl")
+holoParent(A,9)
+holoEntity(A):setSubMaterial(2,DoorMaterial)
+holoEntity(A):setSubMaterial(3,DoorWindowLining)
+
+A=14
+holoCreate(A,E:toWorld(vec(29.73,51.75,86.785)),vec(1.01,0.5,1.01),E:toWorld(ang(0,0,0)),DoorColor,"models/botzmpak/parts/a_smee_door.mdl")
+holoParent(A,10)
+holoEntity(A):setSubMaterial(2,DoorMaterial)
+holoEntity(A):setSubMaterial(3,DoorWindowLining)
+
+#Rear Doors
+A=15
+holoCreate(A,E:toWorld(vec(213.4,51.75,86.785)),vec(1.01,0.5,1.01),E:toWorld(ang(0,180,0)),DoorColor,"models/botzmpak/parts/a_smee_door.mdl")
+holoParent(A,9)
+holoEntity(A):setSubMaterial(2,DoorMaterial)
+holoEntity(A):setSubMaterial(3,DoorWindowLining)
+
+A=16
+holoCreate(A,E:toWorld(vec(237.13,51.75,86.785)),vec(1.01,0.5,1.01),E:toWorld(ang(0,0,0)),DoorColor,"models/botzmpak/parts/a_smee_door.mdl")
+holoParent(A,10)
+holoEntity(A):setSubMaterial(2,DoorMaterial)
+holoEntity(A):setSubMaterial(3,DoorWindowLining)
+
+}
+
+interval(100)
+
+#if(MU_Master){
+    ToggleRight=ToggleRightDoors
+    ToggleLeft=ToggleLeftDoors
+#[    DoorMU_Out_Front[1,number]=DoorMU_Out_Rear[1,number]=1
+    DoorMU_Out_Front[2,number]=DoorMU_Out_Rear[2,number]=ToggleRightDoors
+    DoorMU_Out_Front[3,number]=DoorMU_Out_Rear[3,number]=ToggleLeftDoors
+}elseif(DoorMU_In_Front[1,number]==1){
+    ToggleRight=DoorMU_In_Front[2,number]
+    ToggleLeft=DoorMU_In_Front[3,number]
+    DoorMU_Out_Front[1,number]=0
+    DoorMU_Out_Rear[1,number]=1
+    DoorMU_Out_Rear[2,number]=DoorMU_In_Front[2,number]
+    DoorMU_Out_Rear[3,number]=DoorMU_In_Front[3,number]
+}elseif(DoorMU_In_Rear[1,number]==1){
+    ToggleLeft=DoorMU_In_Rear[2,number]
+    ToggleRight=DoorMU_In_Rear[3,number]
+    DoorMU_Out_Front[1,number]=1
+    DoorMU_Out_Rear[1,number]=0
+    DoorMU_Out_Front[2,number]=DoorMU_In_Rear[2,number]
+    DoorMU_Out_Front[3,number]=DoorMU_In_Rear[3,number]
+}]#
+
+
+
+
+if(changed(ToggleRight)&ToggleRight&RightToggled==0){
+    timer("RAOpen",1000*soundDuration(DoorOpenAnnouncement))
+    soundPlay(0,0,DoorOpenAnnouncement)
+}elseif(changed(ToggleRight)&ToggleRight&RightToggled==1){
+    timer("RAClose",1000*soundDuration(DoorCloseAnnouncement))
+    soundPlay(2,0,DoorCloseAnnouncement)
+}
+
+if(clk("RAOpen")){
+    stoptimer("RAOpen")
+    soundStop(0,0)
+    RightToggled=!RightToggled
+    soundPlay(1,0,DoorOpenSound)
+}elseif(clk("RAClose")){
+    stoptimer("RAClose")
+    soundStop(0,0)
+    RightToggled=!RightToggled
+    soundPlay(2,0,DoorOpenSound)
+}
+
+
+if(RightToggled==1 & DoorPosR<MaxDoorPos){
+    DoorPosR+=DoorSpeed
+    DoorPosR = clamp(DoorPosR,0,MaxDoorPos)
+    holoPos(1,E:toWorld(vec(DoorPosR,0,0)))
+    holoPos(2,E:toWorld(vec(-DoorPosR,0,0)))
+}elseif(RightToggled==0 & DoorPosR>0){
+    DoorPosR+=-DoorSpeed
+    DoorPosR = clamp(DoorPosR,0,MaxDoorPos)
+    holoPos(1,E:toWorld(vec(DoorPosR,0,0)))
+    holoPos(2,E:toWorld(vec(-DoorPosR,0,0)))
+}
+
+
+
+
+
+
+if(changed(ToggleLeft)&ToggleLeft&LeftToggled==0){
+    timer("LAOpen",1000*soundDuration(DoorOpenAnnouncement))
+    soundPlay(0,0,DoorOpenAnnouncement)
+}elseif(changed(ToggleLeft)&ToggleLeft&LeftToggled==1){
+    timer("LAClose",1000*soundDuration(DoorCloseAnnouncement))
+    soundPlay(2,0,DoorCloseAnnouncement)
+}
+
+if(clk("LAOpen")){
+    stoptimer("LAOpen")
+    soundStop(0,0)
+    LeftToggled=!LeftToggled
+    soundPlay(1,0,DoorOpenSound)
+}elseif(clk("LAClose")){
+    stoptimer("LAClose")
+    soundStop(0,0)
+    LeftToggled=!LeftToggled
+    soundPlay(2,0,DoorOpenSound)
+}
+
+
+if(LeftToggled==1 & DoorPosL<MaxDoorPos){
+    DoorPosL+=DoorSpeed
+    DoorPosL = clamp(DoorPosL,0,MaxDoorPos)
+    holoPos(9,E:toWorld(vec(-DoorPosL,0,0)))
+    holoPos(10,E:toWorld(vec(DoorPosL,0,0)))
+}elseif(LeftToggled==0 & DoorPosL>0){
+    DoorPosL+=-DoorSpeed
+    DoorPosL = clamp(DoorPosL,0,MaxDoorPos)
+    holoPos(9,E:toWorld(vec(-DoorPosL,0,0)))
+    holoPos(10,E:toWorld(vec(DoorPosL,0,0)))
+}
+
+if(DoorPosR>0){
+RightOpen=1
+}else{
+RightOpen=0
+}
+if(DoorPosL>0){
+LeftOpen=1
+}else{
+LeftOpen=0
+}

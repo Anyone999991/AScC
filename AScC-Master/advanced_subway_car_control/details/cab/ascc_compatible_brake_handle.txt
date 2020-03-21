@@ -1,0 +1,97 @@
+@name AScC Compatible Brake Handle
+@inputs Brake
+@outputs 
+@persist E:entity A
+@trigger
+if(first()|dupefinished()){
+
+
+HeightOffset = 0   #how high the thing spawns relative to the e2
+
+BaseMaterial = "models/proppertextures/cabmetal_gray"
+BaseColor = vec(255)
+MountMaterial = "models/proppertextures/wheel"
+MountColor = vec(255)
+HandleMaterial = "models/proppertextures/wheel"
+HandleColor = vec(255)
+
+
+
+
+E2=entity()
+E2:setAlpha(0)
+
+#parent
+
+A=99
+holoCreate(A)
+holoModel(A,"")
+holoParent(A,E2)
+holoPos(A,E2:toWorld(vec(0,0,HeightOffset)))
+holoAng(A,E2:toWorld(ang(0,0,0)))
+holoScale(A,vec(0.1))
+holoAlpha(A,0)
+E=holoEntity(A)
+
+#Base
+
+A=1
+holoCreate(A)
+holoModel(A,"models/sprops/cylinders/size_5/cylinder_12x12.mdl")
+holoParent(A,E)
+holoPos(A,E:toWorld(vec(0,0,-1.3)))
+holoAng(A,E:toWorld(ang(0,0,0)))
+holoMaterial(A,BaseMaterial)
+holoColor(A,BaseColor)
+holoScale(A,vec(0.35,0.35,0.2))
+
+A=2
+holoCreate(A)
+holoModel(A,"models/sprops/cylinders/size_5/cylinder_12x12.mdl")
+holoParent(A,E)
+holoPos(A,E:toWorld(vec(0,0,0.70)))
+holoAng(A,E:toWorld(ang(0,0,0)))
+holoMaterial(A,MountMaterial)
+holoColor(A,MountColor)
+holoScale(A,vec(0.2,0.2,0.2))
+
+#parent for handle
+
+A=3
+holoCreate(A)
+holoModel(A,"models/sprops/misc/fittings/cred_3_1_5_short.mdl")
+holoParent(A,E)
+holoPos(A,E:toWorld(vec(0,0,3.23)))
+holoAng(A,E:toWorld(ang(0,0,0)))
+holoMaterial(A,HandleMaterial)
+holoColor(A,HandleColor)
+holoScale(A,vec(0.45,0.45,0.4))
+
+A=4
+holoCreate(A)
+holoModel(A,"models/magtrainslocos/cstands/bl2/locobrake.mdl")
+holoParent(A,3)
+holoPos(A,E:toWorld(vec(0,0,1.95)))
+holoAng(A,E:toWorld(ang(0,0,0)))
+holoMaterial(A,HandleMaterial)
+holoColor(A,HandleColor)
+holoScale(A,vec(1))
+
+A=5
+holoCreate(A)
+holoModel(A,"cylinder")
+holoParent(A,3)
+holoPos(A,E:toWorld(vec(0,0,2)))
+holoAng(A,E:toWorld(ang(0,0,0)))
+holoMaterial(A,HandleMaterial)
+holoColor(A,HandleColor)
+holoScale(A,vec(0.11))
+
+}
+
+
+holoAng(3,E:toWorld(ang(0,Brake*18,0)))
+
+if(~Brake){
+    soundPlay(0,0,"gsgtrainsounds/misc/airbrakes/air_26l_move.wav")
+}
