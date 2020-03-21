@@ -6,7 +6,7 @@
 if(first()|dupefinished()){
 E = Body
 A = 1
-#include "advanced_subway_car_control/version/version.txt"
+#include "advanced_subway_car_control/version/version"
 
 #Config
 

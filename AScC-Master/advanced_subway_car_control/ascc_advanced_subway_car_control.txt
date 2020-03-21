@@ -16,7 +16,7 @@
 
 if(first()|duped()){
 Controls = table()
-#include "advanced_subway_car_control/version/version.txt"
+#include "advanced_subway_car_control/version/version"
 
     #Config
 
@@ -102,7 +102,7 @@ Controls["EmBrake",string]      = "rshift"
 
 MU_Out_Rear = MU_Out_Front:clone()]#
 
-setname("Advanced Subway car Controller\n"+Main_Version)
+setName("Advanced Subway car Controller\n"+Main_Version)
 
 }
 
