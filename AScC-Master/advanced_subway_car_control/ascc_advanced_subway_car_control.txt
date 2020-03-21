@@ -102,7 +102,7 @@ Controls["EmBrake",string]      = "rshift"
 
 MU_Out_Rear = MU_Out_Front:clone()]#
 
-setName("Advanced Subway car Controller\n"+Main_Version)
+setName("Advanced Subway car Control\n"+Main_Version)
 
 }
 
