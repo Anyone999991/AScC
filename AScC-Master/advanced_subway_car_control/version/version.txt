@@ -1,3 +1,2 @@
-@persist [Main_Version Door_Version]:string
 Main_Version = "V0.17"
 Door_Version = "V0.15"
