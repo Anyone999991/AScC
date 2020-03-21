@@ -1,2 +1,2 @@
 @persist Main_Version
-Main_Version = 0.17
+Main_Version = 0.18

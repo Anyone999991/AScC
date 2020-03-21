@@ -1,4 +1,4 @@
-@name AScC Door System R33
+@name advanced_subway_car_control/details/AScC Door System R33
 @inputs Body:entity MU_Master ToggleRightDoors ToggleLeftDoors MUInfo:array #DoorMU_In_Front:array DoorMU_In_Rear:array
 @outputs RightOpen LeftOpen DoorInfo:array #DoorMU_Out_Front:array DoorMU_Out_Rear:array
 @persist E:entity DoorSpeed DoorColor:vector RightOpen LeftOpen DoorMU_Out_Front:array DoorMU_Out_Rear:array [DoorMaterial DoorOpenSound DoorOpenAnnouncement DoorCloseSound DoorCloseAnnouncement]:string RightToggled DoorPosR MaxDoorPos LeftToggled DoorPosL
@@ -12,23 +12,33 @@ A = 1
 
 DoorSpeed = 1.5  #door speed
 
-DoorMaterial = "models/proppertextures/aluminum"
-DoorWindowLining = "sprops/textures/sprops_chrome2"
-DoorColor = vec(255)
+DoorMaterial = "models/props_gulch/tinycars/tc_colorable"
+DoorWindowLining = "models/proppertextures/aluminum"
+DoorColor = vec(160,60,60)
+
+GlassAlpha = 100
+GlassColor = vec(255)
+GlassMat = "models/proppertextures/glass_clear"
+
+Late = 0    #early or late doors?
 
 #Sounds, these have to be on the server in order to work properly
 
 DoorOpenSound = "nycta/r32/dooropn.wav"
 DoorOpenAnnouncement = ""
 DoorCloseSound = "nycta/r32/doorcls.wav"
-DoorCloseAnnouncement = ""
+DoorCloseAnnouncement = "anytrains/nycta/announcement/closingdoors1.wav"
 
 #end of config
 
 
 MaxDoorPos = 23
 
-setName("AScC Door System\nR33\nVersion: "+Door_Version)
+
+
+
+setName("AScC Door System\nR33\nVersion: V"+Main_Version)
+
 #Right Doors
 
 #F Parent
@@ -129,6 +139,101 @@ holoCreate(A,E:toWorld(vec(237.13,51.75,86.785)),vec(1.01,0.5,1.01),E:toWorld(an
 holoParent(A,10)
 holoEntity(A):setSubMaterial(2,DoorMaterial)
 holoEntity(A):setSubMaterial(3,DoorWindowLining)
+
+#Windows
+#Right
+#Front Doors
+A++
+holoCreate(A,E:toWorld(vec(201.43,-51.75,92.785-(6*Late))),vec(1.01,0.5,1.01),E:toWorld(ang(0,0,0)),DoorColor,"models/botzmpak/parts/a_smee_door_window.mdl")
+holoParent(A,1)
+holoMaterial(A,GlassMat)
+holoColor(A,GlassColor)
+holoAlpha(A,GlassAlpha)
+
+A++
+holoCreate(A,E:toWorld(vec(177.7,-51.75,92.785-(6*Late))),vec(1.01,0.5,1.01),E:toWorld(ang(0,180,0)),DoorColor,"models/botzmpak/parts/a_smee_door_window.mdl")
+holoParent(A,2)
+holoMaterial(A,GlassMat)
+holoColor(A,GlassColor)
+holoAlpha(A,GlassAlpha)
+
+#Middle Doors
+A++
+holoCreate(A,E:toWorld(vec(-6,-51.75,92.785-(6*Late))),vec(1.01,0.5,1.01),E:toWorld(ang(0,0,0)),DoorColor,"models/botzmpak/parts/a_smee_door_window.mdl")
+holoParent(A,1)
+holoMaterial(A,GlassMat)
+holoColor(A,GlassColor)
+holoAlpha(A,GlassAlpha)
+
+A++
+holoCreate(A,E:toWorld(vec(-29.73,-51.75,92.785-(6*Late))),vec(1.01,0.5,1.01),E:toWorld(ang(0,180,0)),DoorColor,"models/botzmpak/parts/a_smee_door_window.mdl")
+holoParent(A,2)
+holoMaterial(A,GlassMat)
+holoColor(A,GlassColor)
+holoAlpha(A,GlassAlpha)
+
+#Rear Doors
+A++
+holoCreate(A,E:toWorld(vec(-213.4,-51.75,92.785-(6*Late))),vec(1.01,0.5,1.01),E:toWorld(ang(0,0,0)),DoorColor,"models/botzmpak/parts/a_smee_door_window.mdl")
+holoParent(A,1)
+holoMaterial(A,GlassMat)
+holoColor(A,GlassColor)
+holoAlpha(A,GlassAlpha)
+
+A++
+holoCreate(A,E:toWorld(vec(-237.13,-51.75,92.785-(6*Late))),vec(1.01,0.5,1.01),E:toWorld(ang(0,180,0)),DoorColor,"models/botzmpak/parts/a_smee_door_window.mdl")
+holoParent(A,2)
+holoMaterial(A,GlassMat)
+holoColor(A,GlassColor)
+holoAlpha(A,GlassAlpha)
+
+
+#Left
+#Front Doors
+A++
+holoCreate(A,E:toWorld(vec(-201.43,51.75,92.785-(6*Late))),vec(1.01,0.5,1.01),E:toWorld(ang(0,180,0)),DoorColor,"models/botzmpak/parts/a_smee_door_window.mdl")
+holoParent(A,9)
+holoMaterial(A,GlassMat)
+holoColor(A,GlassColor)
+holoAlpha(A,GlassAlpha)
+
+A++
+holoCreate(A,E:toWorld(vec(-177.7,51.75,92.785-(6*Late))),vec(1.01,0.5,1.01),E:toWorld(ang(0,0,0)),DoorColor,"models/botzmpak/parts/a_smee_door_window.mdl")
+holoParent(A,10)
+holoMaterial(A,GlassMat)
+holoColor(A,GlassColor)
+holoAlpha(A,GlassAlpha)
+
+#Middle Doors
+A++
+holoCreate(A,E:toWorld(vec(6,51.75,92.785-(6*Late))),vec(1.01,0.5,1.01),E:toWorld(ang(0,180,0)),DoorColor,"models/botzmpak/parts/a_smee_door_window.mdl")
+holoParent(A,9)
+holoMaterial(A,GlassMat)
+holoColor(A,GlassColor)
+holoAlpha(A,GlassAlpha)
+
+A++
+holoCreate(A,E:toWorld(vec(29.73,51.75,92.785-(6*Late))),vec(1.01,0.5,1.01),E:toWorld(ang(0,0,0)),DoorColor,"models/botzmpak/parts/a_smee_door_window.mdl")
+holoParent(A,10)
+holoMaterial(A,GlassMat)
+holoColor(A,GlassColor)
+holoAlpha(A,GlassAlpha)
+
+#Rear Doors
+A++
+holoCreate(A,E:toWorld(vec(213.4,51.75,92.785-(6*Late))),vec(1.01,0.5,1.01),E:toWorld(ang(0,180,0)),DoorColor,"models/botzmpak/parts/a_smee_door_window.mdl")
+holoParent(A,9)
+holoMaterial(A,GlassMat)
+holoColor(A,GlassColor)
+holoAlpha(A,GlassAlpha)
+
+A++
+holoCreate(A,E:toWorld(vec(237.13,51.75,92.785-(6*Late))),vec(1.01,0.5,1.01),E:toWorld(ang(0,0,0)),DoorColor,"models/botzmpak/parts/a_smee_door_window.mdl")
+holoParent(A,10)
+holoMaterial(A,GlassMat)
+holoColor(A,GlassColor)
+holoAlpha(A,GlassAlpha)
+
 
 }
 

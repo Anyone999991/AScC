@@ -1,4 +1,4 @@
-@name AScC Compatible Brake Handle
+@name advanced_subway_car_control/details/cab/AScC Compatible Brake Handle
 @inputs Brake
 @outputs 
 @persist E:entity A

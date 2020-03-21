@@ -1,8 +1,8 @@
-@name AScC_Advanced_Subway_car_Control
+@name advanced_subway_car_control/AScC_Advanced_Subway_car_Control
 @inputs On MU_Master Pod:entity Trucks:array MU_In_Front:array MU_In_Rear:array
 @outputs MPH Throttle Accelerate OperatorKey OperatorKeyRemoved Brake BrakePressure MU_Out_Rear:array MU_Out_Front:array
 
-@outputs Angle2 Angle Total FlangeSound
+
 
 @persist MaxSpeed MaxSpd Mul Throttle BrakePressure OperatorKey BrakeMul Brake_Release:string MU_Out_Rear:array MU_Out_Front:array 
 @persist Brake OperatorKeyRemoved BrakeSpd ACC Accelerate Shift:string [Controls Routing]:table [E O Body Driver]:entity FlangeSound
@@ -10,11 +10,13 @@
 
 @trigger
 @model models/jaanus/wiretool/wiretool_speed.mdl
+
+
 #Advanced Subway car Control
 #based on OLC but heavily modified
 #MU doesnt work yet
 
-if(first()|duped()){
+if(first()|dupefinished()){
 Controls = table()
 #include "advanced_subway_car_control/version/version"
 
@@ -67,13 +69,12 @@ Controls["EmBrake",string]      = "rshift"
     MaxSpd = MaxSpeed*23.466
 
     Throttle = 0
-    AccelTo = 0
     Brake = 10
     E = entity()
     O = owner()
     #runOnChat(1)
 
-    #Controls Init
+    #Controls Init, taken from rlcpt (going to change this soon)
     foreach(K,V:string = Controls){
         if(V:find(" +Shift")){
             Routing[K,number] = 1
@@ -102,11 +103,56 @@ Controls["EmBrake",string]      = "rshift"
 
 MU_Out_Rear = MU_Out_Front:clone()]#
 
-setName("Advanced Subway car Control\n"+Main_Version)
+
+#check for version on github
+
+runOnHTTP(1)
+httpRequest("https://raw.githubusercontent.com/Anyone999991/AScC/master/AScC-Master/advanced_subway_car_control/version/version.txt")
+
+#make a timer to stop it after a while
+
+timer("version_check",8000)
+
+#no
+
+setName("Advanced Subway car Control\nV"+Main_Version)
 
 }
-
 runOnTick(1)
+
+if(clk("version_check"))
+{
+runOnHTTP(0)
+hint("NIGGA YOUR INTERNET OFF HOW TF YOU EVEN PLAYIN GMOD?",7)
+O:soundPlay(6,0,"titus's_trainbuild_content_pack_1.1/memes/threat1.wav")
+stoptimer("version_check")
+}
+elseif(httpClk())
+{
+runOnHTTP(0)
+stoptimer("version_check")
+
+local VersionInfo = httpData()
+local VersionE2explode = VersionInfo:explode(" ")
+local VersionE2 = VersionE2explode[4,string]
+if(VersionE2:toNumber()>Main_Version)
+{
+hint("NIGGA YOUR E2 IS OUTDATED",7)
+O:soundPlay(6,0,"buttons/button2.wav")
+}
+elseif(VersionE2:toNumber()<Main_Version)
+{
+hint("You are using a developer version of AScC",7)
+O:soundPlay(6,0,"buttons/button3.wav")
+}
+else
+{
+hint("AScC is the most recent version",7)
+}
+
+print("AScC GitHub Version: "+VersionE2+"You have AScC Version: "+Main_Version)
+}
+
 if(On){
     
     #sound init
@@ -308,8 +354,12 @@ OperatorKeyRemoved = 1
     
     soundPitch(1,Spd > 15 ? Spd/10 : 0)
     
+    if(BrakePressure>0){
     soundPitch(2,clamp(Spd/(MaxSpd/100),75,100))
     soundVolume(2,Spd > 15 & Braking == 1 ? BrakePressure/50*0.25 + Spd/(MaxSpd*2) : 0)
+    }else{
+    soundVolume(2,0)
+    }
     
     
     #flange sound calculation
@@ -317,12 +367,12 @@ OperatorKeyRemoved = 1
     Angle = Body:angles():yaw()
     Angle2 = Trucks[1,entity]:angles():yaw()   
     Total = round(Angle - Angle2)
-    Speed = Body:vel():length()   
+    Speed = Body:velL():length()   
     if((Total < 0 & Total > -357) | Total > 3)
     {
     FlangeSound = 1
     }
-    elseif(Total == 0 | Total < 3 | Total > -3 | Total < -357)
+    else#if(Total == 0 | Total < 3 | Total > -3 | Total < -357)
     {
     FlangeSound = 0
     }
@@ -339,10 +389,10 @@ OperatorKeyRemoved = 1
     
     if(BrakePressure>0 & Spd>15){
     Body:applyForce((E:up()*(BrakePressure*(Vel/50))*BrakeMul*2))
-    }elseif(BrakePressure>0 & Spd<15){
+    }elseif(changed(BrakePressure)&BrakePressure>0 & Spd<15){
     Trucks[1,entity]:propPhysicalMaterial("metal")
     Trucks[2,entity]:propPhysicalMaterial("metal")
-    }elseif(BrakePressure==0){
+    }elseif(changed(BrakePressure)&BrakePressure==0){
     Trucks[1,entity]:propPhysicalMaterial("gmod_ice")
     Trucks[2,entity]:propPhysicalMaterial("gmod_ice")
     }
@@ -350,23 +400,7 @@ OperatorKeyRemoved = 1
     if(changed(Brake)&!Brake){
         soundPlay(3,0,Brake_Release)
     }
-    #Chat Control
-    
-#[    if(chatClk(O)){
-        Sentence = O:lastSaid():explode(" ")
-        CMD = Sentence[1,string]
-        if(CMD == ".throttle"){
-            
-            Throttle = clamp(Sentence[2,string]:toNumber(),-3,3)
-            hideChat(1)
-            print("Notch set to " + Throttle:toString())
-        }elseif(CMD == ".brake"){
-            
-            AccelTo = clamp(Sentence[2,string]:toNumber(),-3,3)
-            hideChat(1)
-            print("Brake set to " + AccelTo:toString() + "%")
-        }
-}]#
+
     
 }else{
     if(~On){
@@ -376,6 +410,7 @@ OperatorKeyRemoved = 1
         soundStop(1)
         soundStop(2)
         soundStop(3)
+        soundStop(4)
     }
 }
 

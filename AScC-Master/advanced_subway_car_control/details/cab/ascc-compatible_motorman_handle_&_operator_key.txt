@@ -1,4 +1,4 @@
-@name AScC-Compatible Motorman Handle & Operator Key
+@name advanced_subway_car_control/details/cab/AScC-Compatible Motorman Handle & Operator Key
 @inputs Throttle Accelerate OperatorKey OperatorKeyRemoved
 @outputs
 @persist E:entity A
@@ -290,7 +290,7 @@ if(ThrottleE>=0&ThrottleE<1){
 #throttle sounds
 
 if(changed(ThrottleE)){
-soundPlay(0,0,"gsgtrainsounds/misc/cab/reverser_neutral_3.wav")
+soundPlay(0,0,"anytrains/nycta/controls/notch_xm579.wav")
 }
 
 #up/down ang
@@ -300,7 +300,7 @@ holoAng(5,holoEntity(4):toWorld(ang(0,0,26*!Accelerate)))
 #up/down sound
 
 if(~Accelerate){
-soundPlay(1,0,"gsgtrainsounds/misc/cab/reverser_neutral.wav")
+soundPlay(1,0,"anytrains/nycta/controls/deadman_xm579.wav")
 }
 
 #operator key angle
@@ -308,7 +308,7 @@ soundPlay(1,0,"gsgtrainsounds/misc/cab/reverser_neutral.wav")
 holoAng(17,E:toWorld(ang(0,-OperatorKey*20,0)))
 
 if(~OperatorKey){
-soundPlay(2,0,"gsgtrainsounds/misc/air_switch.wav")
+soundPlay(2,0,"anytrains/nycta/controls/reverser_xm579.wav")
 }
 
 if(OperatorKeyRemoved){
