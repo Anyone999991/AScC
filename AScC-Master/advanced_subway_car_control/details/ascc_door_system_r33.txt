@@ -1,7 +1,7 @@
 @name advanced_subway_car_control/details/AScC Door System R33
-@inputs Body:entity MU_Master ToggleRightDoors ToggleLeftDoors MUInfo:array #DoorMU_In_Front:array DoorMU_In_Rear:array
-@outputs RightOpen LeftOpen DoorInfo:array #DoorMU_Out_Front:array DoorMU_Out_Rear:array
-@persist E:entity DoorSpeed DoorColor:vector RightOpen LeftOpen DoorMU_Out_Front:array DoorMU_Out_Rear:array [DoorMaterial DoorOpenSound DoorOpenAnnouncement DoorCloseSound DoorCloseAnnouncement]:string RightToggled DoorPosR MaxDoorPos LeftToggled DoorPosL
+@inputs Body:entity MU_Master ToggleRightDoors ToggleLeftDoors 
+@outputs RightOpen LeftOpen #DoorInfo:array 
+@persist E:entity DoorSpeed DoorColor:vector RightOpen LeftOpen [DoorMaterial DoorOpenSound DoorOpenAnnouncement DoorCloseSound DoorCloseAnnouncement]:string RightToggled DoorPosR MaxDoorPos LeftToggled DoorPosL
 @trigger 
 if(first()|dupefinished()){
 E = Body
@@ -242,26 +242,13 @@ interval(100)
 #if(MU_Master){
     ToggleRight=ToggleRightDoors
     ToggleLeft=ToggleLeftDoors
-#[    DoorMU_Out_Front[1,number]=DoorMU_Out_Rear[1,number]=1
-    DoorMU_Out_Front[2,number]=DoorMU_Out_Rear[2,number]=ToggleRightDoors
-    DoorMU_Out_Front[3,number]=DoorMU_Out_Rear[3,number]=ToggleLeftDoors
-}elseif(DoorMU_In_Front[1,number]==1){
-    ToggleRight=DoorMU_In_Front[2,number]
-    ToggleLeft=DoorMU_In_Front[3,number]
-    DoorMU_Out_Front[1,number]=0
-    DoorMU_Out_Rear[1,number]=1
-    DoorMU_Out_Rear[2,number]=DoorMU_In_Front[2,number]
-    DoorMU_Out_Rear[3,number]=DoorMU_In_Front[3,number]
-}elseif(DoorMU_In_Rear[1,number]==1){
-    ToggleLeft=DoorMU_In_Rear[2,number]
-    ToggleRight=DoorMU_In_Rear[3,number]
-    DoorMU_Out_Front[1,number]=1
-    DoorMU_Out_Rear[1,number]=0
-    DoorMU_Out_Front[2,number]=DoorMU_In_Rear[2,number]
-    DoorMU_Out_Front[3,number]=DoorMU_In_Rear[3,number]
+    DoorInfo = array(ToggleRightDoors,ToggleLeftDoors)
+    
+#}
+#[elseif(!MU_Master&MUInfo[1,number]){
+    ToggleRight=MUInfo[2,number]
+    ToggleLeft=MUInfo[3,number]
 }]#
-
-
 
 
 if(changed(ToggleRight)&ToggleRight&RightToggled==0){

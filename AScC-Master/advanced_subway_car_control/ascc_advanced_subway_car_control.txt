@@ -1,10 +1,10 @@
 @name advanced_subway_car_control/AScC_Advanced_Subway_car_Control
-@inputs On MU_Master Pod:entity Trucks:array MU_In_Front:array MU_In_Rear:array
-@outputs MPH Throttle Accelerate OperatorKey OperatorKeyRemoved Brake BrakePressure MU_Out_Rear:array MU_Out_Front:array
+@inputs On MU_Master Pod:entity Trucks:array MU_In_Front:array MU_In_Rear:array DoorInfo:array
+@outputs MPH Throttle Accelerate OperatorKey OperatorKeyRemoved Brake BrakePressure MU_Out_Rear:array MU_Out_Front:array MUInfo:array
 
 
 
-@persist MaxSpeed MaxSpd Mul Throttle BrakePressure OperatorKey BrakeMul Brake_Release:string MU_Out_Rear:array MU_Out_Front:array 
+@persist MaxSpeed MaxSpd Mul Throttle BrakePressure OperatorKey BrakeMul Brake_Release:string MU_Out_Rear:array MU_Out_Front:array MU_Out:array
 @persist Brake OperatorKeyRemoved BrakeSpd ACC Accelerate Shift:string [Controls Routing]:table [E O Body Driver]:entity FlangeSound
 @persist [TractionMotorSound Wheel_Sound Brake_Sound Flange_Sound]:string EngineMin EngineMax Braking Spd Angle Angle2 Total Speed
 
@@ -72,7 +72,6 @@ Controls["EmBrake",string]      = "rshift"
     Brake = 10
     E = entity()
     O = owner()
-    #runOnChat(1)
 
     #Controls Init, taken from rlcpt (going to change this soon)
     foreach(K,V:string = Controls){
@@ -87,38 +86,36 @@ Controls["EmBrake",string]      = "rshift"
 
 #MU assignment
 
-#[MU_Out_Front = array(
-
-                1,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0
-            
-            )
-
-MU_Out_Rear = MU_Out_Front:clone()]#
-
+#[local MU_Out = array(
+1,
+0,
+0,
+0,
+0,
+0,
+0,
+0
+)
+MU_Out_Rear = MU_Out_Front =MU_Out:clone()
+timer("mu_update_out",1000)
+timer("mu_update",1000)]#
 
 #check for version on github
 
 runOnHTTP(1)
 httpRequest("https://raw.githubusercontent.com/Anyone999991/AScC/master/AScC-Master/advanced_subway_car_control/version/version.txt")
 
-#make a timer to stop it after a while
+#make a timer to stop it after a while (timeout)
 
 timer("version_check",8000)
 
-#no
+#name
 
 setName("Advanced Subway car Control\nV"+Main_Version)
 
-}
-runOnTick(1)
+}#end of if(first)
+
+interval(50)
 
 if(clk("version_check"))
 {
@@ -132,13 +129,12 @@ elseif(httpClk())
 runOnHTTP(0)
 stoptimer("version_check")
 
-local VersionInfo = httpData()
-local VersionE2explode = VersionInfo:explode(" ")
+local VersionE2explode = httpData():explode(" ")
 local VersionE2 = VersionE2explode[4,string]
 if(VersionE2:toNumber()>Main_Version)
 {
-hint("NIGGA YOUR E2 IS OUTDATED",7)
-O:soundPlay(6,0,"buttons/button2.wav")
+hint("You are using an outdated version of AScC",7)
+O:soundPlay(6,0,"titus's_trainbuild_content_pack_1.1/memes/threat4.wav")
 }
 elseif(VersionE2:toNumber()<Main_Version)
 {
@@ -189,8 +185,6 @@ if(On){
 #BrakePressure
 #Doors Right
 #Doors Left
-#MU_Master
-
 
 #[MU_Front = (MU_In_Front[1,number])
 MU_Rear = (MU_In_Rear[1,number])
@@ -240,13 +234,20 @@ if(MU_Master){
     if((ReverserF|ReverserB)&Throttle==0){
         OperatorKey += (ReverserF - ReverserB)
         OperatorKey = clamp(OperatorKey,-1,1)
-    }  
+    }
+    
 }
 
+#[if((MU_In_Rear[1,number] | MU_In_Front[1,number])){
+stoptimer("mu_update_out")
+timer("mu_update_out",1000)
+MU_Out_Rear = array(1,-OperatorKey,Throttle,Accelerate,Brake,BrakePressure,-DoorInfo[1,number],-DoorInfo[2,number] )
+MU_Out_Front = array(1,OperatorKey,Throttle,Accelerate,Brake,BrakePressure,DoorInfo[1,number],DoorInfo[2,number] )
+}else{
+MU_Out_Front = array(1)
+MU_Out_Rear = array(1)
+}]#
 
-    
-    
-    
 #--IN-&-OUT---MU table:
 
 #MU Connected
@@ -257,88 +258,49 @@ if(MU_Master){
 #BrakePressure
 #Doors Right
 #Doors Left
-#MU_Master
-    
-#[    if(MU_Connected){
-    
-    MU_Out_Rear[2,number] = OperatorKey
-    MU_Out_Rear[3,number] = Throttle
-    MU_Out_Rear[4,number] = Accelerate
-    MU_Out_Rear[5,number] = Brake
-    #MU_Out_Rear[6,number] = BrakePressure
-    #MU_Out_Rear[7,number] = #Doors Right
-    #MU_Out_Rear[8,number] = #Doors Left
-    MU_Out_Rear[9,number] = 1
-    
-    MU_Out_Front = MU_Out_Rear:clone()
-    }]#
-    
-    
-}else{
-OperatorKeyRemoved = 1
 
-#[    if(MU_Connected & MU_In_Front[9,number]){
-    
+#brake pressure
 
-    MU_Out_Rear[2,number] = OperatorKey     = MU_In_Front[2,number]
-    MU_Out_Rear[3,number] = Throttle        = MU_In_Front[3,number]
-    MU_Out_Rear[4,number] = Accelerate      = MU_In_Front[4,number]
-    MU_Out_Rear[5,number] = Brake           = MU_In_Front[5,number]
-    #MU_Out_Rear[6,number] = BrakePressure   = MU_In_Front[6,number]
-    #MU_Out_Rear[7,number] = #Doors Right   = MU_In_Front[7,number]
-    #MU_Out_Rear[8,number] = #Doors Left    = MU_In_Front[8,number]
-    
-    MU_Out_Rear[9,number] = 1
-    
-    
-    
-    MU_Out_Front[2,number] = 0
-    MU_Out_Front[3,number] = 0
-    MU_Out_Front[4,number] = 0
-    MU_Out_Front[5,number] = 0
-    #MU_Out_Front[6,number] = 0
-    #MU_Out_Front[7,number] = #Doors Right   = MU_In_Front[7,number]
-    #MU_Out_Front[8,number] = #Doors Left    = MU_In_Front[8,number]
-    
-    MU_Out_Front[9,number] = 0
-    
-    }elseif(MU_Connected & MU_In_Rear[9,number]){
-    
-
-    MU_Out_Front[2,number] = OperatorKey     = -MU_In_Rear[2,number]
-    MU_Out_Front[3,number] = Throttle        = MU_In_Rear[3,number]
-    MU_Out_Front[4,number] = Accelerate      = MU_In_Rear[4,number]
-    MU_Out_Front[5,number] = Brake           = MU_In_Rear[5,number]
-    #MU_Out_Front[6,number] = BrakePressure   = MU_In_Rear[6,number]
-    #MU_Out_Front[7,number] = #Doors Right   = MU_In_Front[7,number]
-    #MU_Out_Front[8,number] = #Doors Left    = MU_In_Front[8,number]
-    
-    MU_Out_Front[9,number] = 1
-    
-    
-    
-    MU_Out_Rear[2,number] = 0
-    MU_Out_Rear[3,number] = 0
-    MU_Out_Rear[4,number] = 0
-    MU_Out_Rear[5,number] = 0
-    #MU_Out_Rear[6,number] = 0
-    #MU_Out_Rear[7,number] = #Doors Right   = MU_In_Front[7,number]
-    #MU_Out_Rear[8,number] = #Doors Left    = MU_In_Front[8,number]
-    
-    MU_Out_Rear[9,number] = 0
-    
-}]#
-
-}
-
-    #brake pressure
-
-    if(BrakePressure < Brake*10){
+if(BrakePressure < Brake*10){
         BrakePressure+= 1
     }elseif(BrakePressure > Brake*10){
         BrakePressure+= -1
     }
     clamp(BrakePressure,0,100)
+    
+
+}else{
+
+OperatorKeyRemoved = 1
+
+
+
+
+#[if((MU_In_Front[1,number] | MU_In_Rear[1,number])){
+    stoptimer("mu_update")
+    timer("mu_update",1000)
+        
+        
+    Reverser = -MU_In_Front[2,number] + MU_In_Rear[2,number]
+
+    Throttle = clamp(MU_In_Front[3,number] + MU_In_Rear[3,number],0,3)
+        
+    Accelerate = MU_In_Front[4,number] + MU_In_Rear[4,number]
+        
+    BrakePressure = clamp(MU_In_Front[6,number] + MU_In_Rear[6,number],0,100)
+        
+    MU_Out_Rear = MU_In_Front:clone()
+    MU_Out_Front = MU_In_Rear:clone()
+        
+}]#
+
+#local DoorsRight = !MU_In_Front[7,number] + MU_In_Rear[8,number]
+#local DoorsLeft  = MU_In_Front[7,number] + !MU_In_Rear[8,number]
+        
+#MUInfo = array(1,DoorsRight,DoorsLeft)
+
+}
+
     
     Braking = BrakePressure>0 ? 1 : 0
     
