@@ -43,10 +43,12 @@ Controls["EmBrake",string]      = "rshift"
 
     BrakeSpd = 2.5  #Brake Lever Steps (Max is 10)
 
-    MaxSpeed = 45   #Top Speed in MPH
+    MaxSpeed = 55   #Top Speed in MPH
     
-    Mul = 120         #Force multiplier, debug
-    BrakeMul = 250    #Brake force multiplier
+    Cars = 1        #Amount of (Powered) cars
+    
+    Mul = 150         #Force multiplier, debug
+    BrakeMul = 300    #Brake force multiplier
     
 #Sounds
 
@@ -346,11 +348,11 @@ OperatorKeyRemoved = 1
     TargetSpeed = (MaxSpd)*(Throttle/3)*OperatorKey
     
     if(Accelerate){
-    Body:applyForce(Dir*(TargetSpeed - Vel)*Mul*2)
+    Body:applyForce((Dir*(TargetSpeed - Vel)*Mul*2)*Cars)
     }
     
     if(BrakePressure>0 & Spd>15){
-    Body:applyForce((E:up()*(BrakePressure*(Vel/50))*BrakeMul*2))
+    Body:applyForce(((E:up()*(BrakePressure*(Vel/50))*BrakeMul*2)*Cars))
     }elseif(changed(BrakePressure)&BrakePressure>0 & Spd<15){
     Trucks[1,entity]:propPhysicalMaterial("metal")
     Trucks[2,entity]:propPhysicalMaterial("metal")
