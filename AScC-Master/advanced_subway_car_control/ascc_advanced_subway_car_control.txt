@@ -5,8 +5,8 @@
 
 
 @persist MaxSpeed MaxSpd Mul Throttle BrakePressure OperatorKey BrakeMul Brake_Release:string MU_Out_Rear:array MU_Out_Front:array MU_Out:array
-@persist Brake OperatorKeyRemoved BrakeSpd ACC Accelerate Shift:string [Controls Routing]:table [E O Body Driver]:entity FlangeSound
-@persist [TractionMotorSound Wheel_Sound Brake_Sound Flange_Sound]:string EngineMin EngineMax Braking Spd Angle Angle2 Total Speed
+@persist Brake OperatorKeyRemoved BrakeSpd ACC Accelerate Shift:string [Controls Routing]:table [E O Body Driver]:entity FlangeSound TB TB1
+@persist [TractionMotorSound Wheel_Sound Brake_Sound Flange_Sound]:string EngineMin EngineMax Braking Spd Angle Angle2 Total Speed Cars
 
 @trigger
 @model models/jaanus/wiretool/wiretool_speed.mdl
@@ -47,7 +47,7 @@ Controls["EmBrake",string]      = "rshift"
     
     Cars = 1        #Amount of (Powered) cars
     
-    Mul = 150         #Force multiplier, debug
+    Mul = 120         #Force multiplier, 120 is default
     BrakeMul = 300    #Brake force multiplier
     
 #Sounds
@@ -115,7 +115,41 @@ timer("version_check",8000)
 
 setName("Advanced Subway car Control\nV"+Main_Version)
 
+#truck material application
+
+function void releaseBrake()
+{
+    local TrucksB = Body:getConstraints()
+    foreach(TB,TB1:entity=TrucksB)
+        {
+        TB1:propPhysicalMaterial("friction_00")
+        TB1:propDrag(0)
+    }
+}
+function void applyBrake()
+{
+    local TrucksB = Body:getConstraints()
+    foreach(TB,TB1:entity=TrucksB)
+        {
+        TB1:propPhysicalMaterial("metal")
+        TB1:propDrag(100)
+    }
+}
+
+
+
+
+
+
+
 }#end of if(first)
+
+
+
+
+
+
+
 
 interval(50)
 
@@ -136,7 +170,7 @@ local VersionE2 = VersionE2explode[4,string]
 if(VersionE2:toNumber()>Main_Version)
 {
 hint("You are using an outdated version of AScC",7)
-O:soundPlay(6,0,"titus's_trainbuild_content_pack_1.1/memes/threat4.wav")
+O:soundPlay(6,0,"phx/hmetal1.wav")
 }
 elseif(VersionE2:toNumber()<Main_Version)
 {
@@ -264,9 +298,9 @@ MU_Out_Rear = array(1)
 #brake pressure
 
 if(BrakePressure < Brake*10){
-        BrakePressure+= 1
+        BrakePressure+= 2
     }elseif(BrakePressure > Brake*10){
-        BrakePressure+= -1
+        BrakePressure+= -3
     }
     clamp(BrakePressure,0,100)
     
@@ -320,7 +354,7 @@ OperatorKeyRemoved = 1
     
     if(BrakePressure>0){
     soundPitch(2,clamp(Spd/(MaxSpd/100),75,100))
-    soundVolume(2,Spd > 15 & Braking == 1 ? BrakePressure/50*0.25 + Spd/(MaxSpd*2) : 0)
+    soundVolume(2,(Spd > 15 & Braking == 1) ? BrakePressure/50*0.25 + Spd/(MaxSpd*2) : 0)
     }else{
     soundVolume(2,0)
     }
@@ -341,34 +375,35 @@ OperatorKeyRemoved = 1
     FlangeSound = 0
     }
 
-    soundVolume(4,FlangeSound*((abs(MPH)/MaxSpeed)*0.25))
+    soundVolume(4,FlangeSound*((abs(MPH)/MaxSpeed)*0.2))
     
     #Force Application
     Dir = -E:up()
     TargetSpeed = (MaxSpd)*(Throttle/3)*OperatorKey
     
     if(Accelerate){
-    Body:applyForce((Dir*(TargetSpeed - Vel)*Mul*2)*Cars)
+    Body:applyForce(Dir*(TargetSpeed - Vel)*(Mul*2*Cars))
     }
     
-    if(BrakePressure>0 & Spd>15){
-    Body:applyForce(((E:up()*(BrakePressure*(Vel/50))*BrakeMul*2)*Cars))
-    }elseif(changed(BrakePressure)&BrakePressure>0 & Spd<15){
-    Trucks[1,entity]:propPhysicalMaterial("metal")
-    Trucks[2,entity]:propPhysicalMaterial("metal")
-    }elseif(changed(BrakePressure)&BrakePressure==0){
-    Trucks[1,entity]:propPhysicalMaterial("gmod_ice")
-    Trucks[2,entity]:propPhysicalMaterial("gmod_ice")
-    }
-    
-    if(changed(Brake)&!Brake){
-        soundPlay(3,0,Brake_Release)
-    }
+if(BrakePressure>0 & Spd>15)
+{
+    Body:applyForce(E:up()*(BrakePressure*(Vel/50))*(BrakeMul*2*Cars))
+}
+elseif(changed(BrakePressure)&(BrakePressure>0 & Spd<15))
+{
+    applyBrake()
+}
+elseif(changed(BrakePressure)&BrakePressure==0)
+{
+    releaseBrake()
+    soundPlay(3,0,Brake_Release)
+}
+
 
     
 }else{
     if(~On){
-        Throttle = Vel = Spd = MPH = OperatorKey = Brake = 0
+        Throttle = Vel = Spd = MPH = OperatorKey = 0
         OperatorKeyRemoved = 1
         soundStop(0)
         soundStop(1)

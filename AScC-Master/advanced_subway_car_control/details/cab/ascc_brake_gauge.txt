@@ -1,0 +1,45 @@
+@name advanced_subway_car_control/details/cab/AScC Brake Gauge
+@inputs BrakePressure Brake
+@outputs 
+@persist NeedleAng E:entity
+@trigger 
+@model models/anytrains/props/detail/gauge_4unit.mdl
+if(first()|dupefinished()){
+    A=1
+    E=entity()
+    
+    #gauge init
+    E:setSubMaterial(3,"models/gsgtrainprops/cab/gauge_air_westinghouse_160_white")
+    E:setSubMaterial(1,"models/proppertextures/brass")
+    E:setBodygroup(1,9)
+    
+    #pointermount & parent
+    holoCreate(A)
+    holoModel(A,"hq_cylinder")
+    holoParent(A,E)
+    holoMaterial(A,"models/proppertextures/enamel_darkgray")
+    holoScale(A,vec(0.02,0.02,0.02))
+    
+    #red pointer
+    A=2
+    holoCreate(A)
+    holoModel(A,"plane")
+    holoParent(A,E)
+    holoPos(A,E:toWorld(vec(0,0,0.075)))
+    holoAng(A,E:toWorld(ang(0,0,0)))
+    holoMaterial(A,"models/gsgtrainprops/cab/needle_air_red")
+    holoScale(A,vec(0.37))
+    #white pointer
+    A=3
+    holoCreate(A)
+    holoModel(A,"plane")
+    holoParent(A,E)
+    holoAng(A,E:toWorld(ang(0,0,0)))
+    holoMaterial(A,"models/gsgtrainprops/cab/needle_air_white")
+    holoScale(A,vec(0.37))
+
+
+
+}
+holoAng(2,E:toWorld(ang(0,10-BrakePressure*2.69,0)))
+holoAng(3,E:toWorld(ang(0,10-Brake*26.9,0)))
